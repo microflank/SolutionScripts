@@ -1,0 +1,427 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "InitializeHasMoreItem": {
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "hasMoreItem",
+                            "type": "boolean",
+                            "value": "@false"
+                        }
+                    ]
+                },
+                "runAfter": {
+                    "Offset": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "InitializeVariable"
+            },
+            "Offset": {
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "Count",
+                            "type": "integer",
+                            "value": 0
+                        }
+                    ]
+                },
+                "runAfter": {},
+                "type": "InitializeVariable"
+            },
+            "Until": {
+                "actions": {
+                    "For_each": {
+                        "actions": {
+                            "Condition_Create": {
+                                "actions": {
+                                    "Create_item": {
+                                        "inputs": {
+                                            "body": {
+                                                "AnniversaryDay": "@{formatDateTime(items('For_each')?['EffectiveStartDate'],'dd')}",
+                                                "AnniversaryMonth": "@{formatDateTime(items('For_each')?['EffectiveStartDate'],'MM')}",
+                                                "AnniversaryYear": "@{formatDateTime(items('For_each')?['EffectiveStartDate'],'yyyy')}",
+                                                "DOBDay": "@{formatDateTime(items('For_each')?['DateOfBirth'],'dd')}",
+                                                "DOBMonth": "@{formatDateTime(items('For_each')?['DateOfBirth'],'MM')}",
+                                                "DOBYear": "@{formatDateTime(items('For_each')?['DateOfBirth'],'yyyy')}",
+                                                "DateOfAnniversary": "@items('For_each')?['EffectiveStartDate']",
+                                                "DateOfBirth": "@{string(items('For_each')?['DateOfBirth'])}",
+                                                "FirstBankAnniversary": "@{formatDateTime(items('For_each')?['EffectiveStartDate'],'dd MMMM yyyy')}",
+                                                "FirstBankBirthday": "@{formatDateTime(items('For_each')?['DateOfBirth'],'dd MMMM')}",
+                                                "FirstBankEmailAddress": "@items('For_each')?['WorkEmail']",
+                                                "FirstBankRegion": "@{items('For_each')?['Region2']}",
+                                                "LegalId": "@{items('For_each')?['LegalEntityId']}",
+                                                "Salutation": "@{items('For_each')?['Salutation']}",
+                                                "Title": "@items('For_each')?['DisplayName']"
+                                            },
+                                            "host": {
+                                                "connection": {
+                                                    "referenceName": "sharepointonline"
+                                                }
+                                            },
+                                            "method": "post",
+                                            "path": "/datasets/@{encodeURIComponent(encodeURIComponent('https://fbn.sharepoint.com/sites/NG'))}/tables/@{encodeURIComponent(encodeURIComponent('545dcf6f-95ab-4e7b-8acb-e5ff742ff644'))}/items"
+                                        },
+                                        "runAfter": {},
+                                        "type": "ApiConnection"
+                                    }
+                                },
+                                "expression": {
+                                    "and": [
+                                        {
+                                            "equals": [
+                                                "@items('For_each')?['TerminationDate']",
+                                                "@null"
+                                            ]
+                                        },
+                                        {
+                                            "equals": [
+                                                "@outputs('LengthGetItems')",
+                                                0
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "runAfter": {
+                                    "LengthGetItems": [
+                                        "Succeeded"
+                                    ]
+                                },
+                                "type": "If"
+                            },
+                            "For_Each_Delete": {
+                                "actions": {
+                                    "Condition_Delete": {
+                                        "actions": {
+                                            "Delete_item": {
+                                                "inputs": {
+                                                    "host": {
+                                                        "connection": {
+                                                            "referenceName": "sharepointonline"
+                                                        }
+                                                    },
+                                                    "method": "delete",
+                                                    "path": "/datasets/@{encodeURIComponent(encodeURIComponent('https://fbn.sharepoint.com/sites/NG'))}/tables/@{encodeURIComponent(encodeURIComponent('545dcf6f-95ab-4e7b-8acb-e5ff742ff644'))}/items/@{encodeURIComponent(items('For_Each_Delete')?['ID'])}"
+                                                },
+                                                "runAfter": {},
+                                                "type": "ApiConnection"
+                                            }
+                                        },
+                                        "expression": {
+                                            "and": [
+                                                {
+                                                    "not": {
+                                                        "equals": [
+                                                            "@items('For_each')?['TerminationDate']",
+                                                            "@null"
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    "greater": [
+                                                        "@outputs('LengthGetItems')",
+                                                        0
+                                                    ]
+                                                },
+                                                {
+                                                    "equals": [
+                                                        "@items('For_each')?['WorkEmail']",
+                                                        "@items('For_Each_Delete')?['FirstBankEmailAddress']"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "runAfter": {},
+                                        "type": "If"
+                                    }
+                                },
+                                "foreach": "@body('Get_items')?['value']",
+                                "runAfter": {
+                                    "LengthGetItems": [
+                                        "Succeeded"
+                                    ]
+                                },
+                                "type": "Foreach"
+                            },
+                            "For_Each_Update": {
+                                "actions": {
+                                    "Condition_Update": {
+                                        "actions": {
+                                            "Update_item": {
+                                                "inputs": {
+                                                    "body": {
+                                                        "AnniversaryDay": "@{formatDateTime(items('For_each')?['EffectiveStartDate'],'dd')}",
+                                                        "AnniversaryMonth": "@{formatDateTime(items('For_each')?['EffectiveStartDate'],'MM')}",
+                                                        "AnniversaryYear": "@{formatDateTime(items('For_each')?['EffectiveStartDate'],'yyyy')}",
+                                                        "DOBDay": "@{formatDateTime(items('For_each')?['DateOfBirth'],'dd')}",
+                                                        "DOBMonth": "@{formatDateTime(items('For_each')?['DateOfBirth'],'MM')}",
+                                                        "DOBYear": "@{formatDateTime(items('For_each')?['DateOfBirth'],'yyyy')}",
+                                                        "DateOfAnniversary": "@items('For_each')?['EffectiveStartDate']",
+                                                        "DateOfBirth": "@{string(items('For_each')?['DateOfBirth'])}",
+                                                        "FirstBankAnniversary": "@{formatDateTime(items('For_each')?['EffectiveStartDate'],'dd MMMM yyyy')}",
+                                                        "FirstBankBirthday": "@{formatDateTime(items('For_each')?['DateOfBirth'],'dd MMMM')}",
+                                                        "FirstBankEmailAddress": "@items('For_each')?['WorkEmail']",
+                                                        "FirstBankRegion": "@{items('For_each')?['Region2']}",
+                                                        "LegalId": "@{items('For_each')?['LegalEntityId']}",
+                                                        "Salutation": "@{items('For_each')?['Salutation']}",
+                                                        "Title": "@items('For_each')?['DisplayName']"
+                                                    },
+                                                    "host": {
+                                                        "connection": {
+                                                            "referenceName": "sharepointonline"
+                                                        }
+                                                    },
+                                                    "method": "patch",
+                                                    "path": "/datasets/@{encodeURIComponent(encodeURIComponent('https://fbn.sharepoint.com/sites/NG'))}/tables/@{encodeURIComponent(encodeURIComponent('545dcf6f-95ab-4e7b-8acb-e5ff742ff644'))}/items/@{encodeURIComponent(items('For_Each_Update')?['ID'])}"
+                                                },
+                                                "runAfter": {},
+                                                "type": "ApiConnection"
+                                            }
+                                        },
+                                        "expression": {
+                                            "and": [
+                                                {
+                                                    "equals": [
+                                                        "@items('For_each')?['TerminationDate']",
+                                                        "@null"
+                                                    ]
+                                                },
+                                                {
+                                                    "greater": [
+                                                        "@outputs('LengthGetItems')",
+                                                        0
+                                                    ]
+                                                },
+                                                {
+                                                    "equals": [
+                                                        "@items('For_each')?['WorkEmail']",
+                                                        "@items('For_Each_Update')?['FirstBankEmailAddress']"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "runAfter": {},
+                                        "type": "If"
+                                    }
+                                },
+                                "foreach": "@body('Get_items')?['value']",
+                                "runAfter": {
+                                    "LengthGetItems": [
+                                        "Succeeded"
+                                    ]
+                                },
+                                "type": "Foreach"
+                            },
+                            "Get_items": {
+                                "inputs": {
+                                    "host": {
+                                        "connection": {
+                                            "referenceName": "sharepointonline"
+                                        }
+                                    },
+                                    "method": "get",
+                                    "path": "/datasets/@{encodeURIComponent(encodeURIComponent('https://fbn.sharepoint.com/sites/NG'))}/tables/@{encodeURIComponent(encodeURIComponent('545dcf6f-95ab-4e7b-8acb-e5ff742ff644'))}/items",
+                                    "queries": {
+                                        "$filter": "FirstBankEmailAddress eq '@{items('For_each')?['WorkEmail']}'",
+                                        "$top": 1
+                                    }
+                                },
+                                "runAfter": {},
+                                "type": "ApiConnection"
+                            },
+                            "LengthGetItems": {
+                                "inputs": "@int(length(body('Get_items')?['value']))",
+                                "runAfter": {
+                                    "Get_items": [
+                                        "Succeeded"
+                                    ]
+                                },
+                                "type": "Compose"
+                            }
+                        },
+                        "foreach": "@body('Parse_JSON')?['items']",
+                        "runAfter": {
+                            "Increment_variable": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "Foreach"
+                    },
+                    "HTTP": {
+                        "inputs": {
+                            "authentication": {
+                                "password": "Fbn_share2$Password",
+                                "type": "Basic",
+                                "username": "sharepoint_deploymnt@firstbanknigeria.com"
+                            },
+                            "headers": {
+                                "Content-Type": "application/json",
+                                "REST-Framework-Version": "4"
+                            },
+                            "method": "GET",
+                            "uri": "https://hdbc.fa.em2.oraclecloud.com/hcmRestApi/resources/11.13.18.05/workers?q=(workRelationships.LegalEntityId=300000001559107) AND (workRelationships.LegislationCode='NG') AND (emails.PrimaryFlag=true)&limit=200&offset=@{variables('Count')}&fields=DateOfBirth,PersonNumber;names:*;emails:*;legislativeInfo:*;addresses:*;workRelationships:*"
+                        },
+                        "runAfter": {},
+                        "runtimeConfiguration": {
+                            "secureData": {
+                                "properties": [
+                                    "outputs"
+                                ]
+                            }
+                        },
+                        "type": "Http"
+                    },
+                    "Increment_variable": {
+                        "inputs": {
+                            "name": "Count",
+                            "value": "@int(length(body('Parse_JSON')?['items']))"
+                        },
+                        "runAfter": {
+                            "Parse_JSON": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "IncrementVariable"
+                    },
+                    "Parse_JSON": {
+                        "inputs": {
+                            "content": "@body('HTTP')",
+                            "schema": {
+                                "properties": {
+                                    "items": {
+                                        "items": {
+                                            "properties": {
+                                                "DateOfBirth": {
+                                                    "type": "string"
+                                                },
+                                                "DisplayName": {
+                                                    "type": "string"
+                                                },
+                                                "EffectiveStartDate": {
+                                                    "type": "string"
+                                                },
+                                                "Gender": {
+                                                    "type": "string"
+                                                },
+                                                "LegalEntityId": {
+                                                    "type": "integer"
+                                                },
+                                                "LegislationCode": {
+                                                    "type": "string"
+                                                },
+                                                "PersonNumber": {
+                                                    "type": "string"
+                                                },
+                                                "Region2": {
+                                                    "type": "string"
+                                                },
+                                                "Salutation": {
+                                                    "type": "string"
+                                                },
+                                                "TerminationDate": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "UserName": {
+                                                    "type": "string"
+                                                },
+                                                "WorkEmail": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "PersonNumber",
+                                                "DateOfBirth",
+                                                "Salutation",
+                                                "DisplayName",
+                                                "EffectiveStartDate",
+                                                "WorkEmail",
+                                                "UserName",
+                                                "Region2",
+                                                "Gender",
+                                                "LegalEntityId",
+                                                "LegislationCode",
+                                                "TerminationDate"
+                                            ],
+                                            "type": "object"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "runAfter": {
+                            "Transform_JSON_To_JSON": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "ParseJson"
+                    },
+                    "Set_hasMoreItem": {
+                        "inputs": {
+                            "name": "hasMoreItem",
+                            "value": "@bool(body('HTTP')?['hasMore'])"
+                        },
+                        "runAfter": {
+                            "HTTP": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "SetVariable"
+                    },
+                    "Transform_JSON_To_JSON": {
+                        "inputs": {
+                            "content": "@body('HTTP')",
+                            "map": {
+                                "name": "AdvanceNGV3JsonTransformer.liquid",
+                                "source": "LogicApp"
+                            }
+                        },
+                        "kind": "JsonToJson",
+                        "runAfter": {
+                            "Set_hasMoreItem": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "Liquid"
+                    }
+                },
+                "expression": "@equals(variables('hasMoreItem'), false)",
+                "limit": {
+                    "count": 60,
+                    "timeout": "PT1H"
+                },
+                "runAfter": {
+                    "InitializeHasMoreItem": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Until"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "triggers": {
+            "Recurrence": {
+                "recurrence": {
+                    "frequency": "Day",
+                    "interval": 1,
+                    "schedule": {
+                        "hours": [
+                            "0"
+                        ]
+                    },
+                    "timeZone": "W. Central Africa Standard Time"
+                },
+                "type": "Recurrence"
+            }
+        }
+    },
+    "kind": "Stateful"
+}

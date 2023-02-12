@@ -1,0 +1,102 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "For_each": {
+                "actions": {
+                    "Condition": {
+                        "actions": {
+                            "Update_item": {
+                                "inputs": {
+                                    "body": {
+                                        "FirstBankDepartment": "@items('For_each')?['FirstBankDepartment']",
+                                        "FirstBankEmailAddress": "@items('For_each')?['FirstBankEmailAddress']",
+                                        "ProfilePicture": "@{concat('https://wkj0p.sharepoint.com/sites/NG/_layouts/15/UserPhoto.aspx?Size=s&AccountName=',string(items('For_each')?['FirstBankEmailAddress']))}",
+                                        "Title": "@items('For_each')?['Title']"
+                                    },
+                                    "host": {
+                                        "connection": {
+                                            "referenceName": "sharepointonline_1"
+                                        }
+                                    },
+                                    "method": "patch",
+                                    "path": "/datasets/@{encodeURIComponent(encodeURIComponent('https://fbn.sharepoint.com/sites/NG'))}/tables/@{encodeURIComponent(encodeURIComponent('545dcf6f-95ab-4e7b-8acb-e5ff742ff644'))}/items/@{encodeURIComponent(items('For_each')?['ID'])}"
+                                },
+                                "runAfter": {},
+                                "type": "ApiConnection"
+                            }
+                        },
+                        "expression": {
+                            "and": [
+                                {
+                                    "equals": [
+                                        "@body('Get_user_profile_(V2)')?['userPrincipalName']",
+                                        "@items('For_each')?['FirstBankEmailAddress']"
+                                    ]
+                                }
+                            ]
+                        },
+                        "runAfter": {
+                            "Get_user_profile_(V2)": [
+                                "Succeeded",
+                                "FAILED"
+                            ]
+                        },
+                        "type": "If"
+                    },
+                    "Get_user_profile_(V2)": {
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "referenceName": "office365users_1"
+                                }
+                            },
+                            "method": "get",
+                            "path": "/codeless/v1.0/users/@{encodeURIComponent(items('For_each')?['FirstBankEmailAddress'])}"
+                        },
+                        "runAfter": {},
+                        "type": "ApiConnection"
+                    }
+                },
+                "foreach": "@body('Get_items')?['value']",
+                "runAfter": {
+                    "Get_items": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Foreach"
+            },
+            "Get_items": {
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "sharepointonline_1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/datasets/@{encodeURIComponent(encodeURIComponent('https://fbn.sharepoint.com/sites/NG'))}/tables/@{encodeURIComponent(encodeURIComponent('545dcf6f-95ab-4e7b-8acb-e5ff742ff644'))}/items"
+                },
+                "runAfter": {},
+                "type": "ApiConnection"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "triggers": {
+            "Recurrence": {
+                "recurrence": {
+                    "frequency": "Day",
+                    "interval": 1,
+                    "schedule": {
+                        "hours": [
+                            "3"
+                        ]
+                    },
+                    "timeZone": "W. Central Africa Standard Time"
+                },
+                "type": "Recurrence"
+            }
+        }
+    },
+    "kind": "Stateful"
+}

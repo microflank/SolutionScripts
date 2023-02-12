@@ -1,0 +1,71 @@
+{
+    "items": [
+        {%- for employee in content.items -%}
+            {% if employee.PersonNumber.size != 5 %}
+                {% continue %}
+            {% endif %}
+            {
+            "PersonNumber" : "{{ employee.PersonNumber }}",
+            "DateOfBirth" : "{{ employee.DateOfBirth }}",
+            {% if employee.names.items.size > 0 %}
+            {% for name in employee.names.items %}
+                {% if email.PrimaryFlag == "false"  %}
+                    {% continue %}
+                {% endif %}
+            "Salutation" : "{{ name.Title }}",
+            "DisplayName" : "{{ name.DisplayName }}",
+            "EffectiveStartDate" : "{{ name.EffectiveStartDate }}",
+            {% endfor %}
+            {% else %}
+            "Salutation" : "",
+            "DisplayName" : "",
+            "EffectiveStartDate" : "",
+            {% endif %}
+            {% if employee.emails.items.size > 0 %}
+            {% for email in employee.emails.items %}
+             {% if email.PrimaryFlag == "false"  %}
+             {% continue %}
+             {% endif %}
+            "WorkEmail" : "{{ email.EmailAddress }}",
+            "UserName" : "{{ email.EmailAddress }}",
+            {% endfor %}
+            {% else %}
+            "WorkEmail" : "",
+            "UserName" : "",
+            {% endif %}
+            {% if employee.addresses.items.size > 0 %}
+            {% for addresse in employee.addresses.items %}
+                {% if addresse.PrimaryFlag == "false"  %}
+                    {% continue %}
+                {% endif %}
+                "Region2" : "{{ addresse.Region2 }}",
+            {% endfor %}
+            {% else %}
+                "Region2": "",
+            {% endif %}
+            {% if employee.legislativeInfo.items.size > 0 %}
+            {% for legislative in employee.legislativeInfo.items %}
+                "Gender" : "{{ legislative.Gender }}",
+            {% endfor %}
+            {% else %}
+                "Gender": "",
+            {% endif %}
+            {% if employee.workRelationships.items.size > 0 %}
+            {% for workRelationship in employee.workRelationships.items %}
+                {% if workRelationship.PrimaryFlag == "false"  %}
+                    {% continue %}
+                {% endif %}
+                "LegalEntityId" : {{ workRelationship.LegalEntityId }},
+                "LegislationCode" : "{{ workRelationship.LegislationCode }}",
+                "TerminationDate":
+                {%- if workRelationship.TerminationDate != '' -%}"{{ workRelationship.TerminationDate }}",{%- else -%}null,{%- endif -%}
+            {% endfor %}
+            {% else %}
+                "LegalEntityId": 0,
+                "LegislationCode": "",
+                "TerminationDate": null,
+            {% endif %}
+        },
+        {%- endfor -%}
+    ]
+}
